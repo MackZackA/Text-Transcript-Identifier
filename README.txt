@@ -5,4 +5,4 @@ The problem I'd like to resolve here is accurately retrieve, at least proportion
 The script here is the baseline system implementing only NLTK and fundamental functions of set data structure.
 
 To run the script, type:
-python text_transcript_identifier_ziang.py text.txt transcript_text.txt 
+python text_transcript_identifier_ziang.py text.txt transcript_text.txt (least # of char in each word) (largest # of words in a phrase) (# of phrases to show)
