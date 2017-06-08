@@ -4,13 +4,15 @@ from __future__ import absolute_import
 from __future__ import print_function
 from nltk.tokenize import RegexpTokenizer
 from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+from six.moves import range
 import operator
 import nltk
 import string
 import sys
 import re
 import six
-from six.moves import range
+
 
 # read the text
 f = open(sys.argv[1])
@@ -74,21 +76,52 @@ def threshold(phrase, min_char_length, max_words_length):
 
 
 def match(phrase, tokenized_transcript): # take the phrase parameter as a string, while take the tokenized transcript as a list of words
-  tokenized_phrase = nltk.word_tokenize(phrase) 
+  ps = PorterStemmer()
+  tokenized_phrase = nltk.word_tokenize(phrase)
+  tokenized_phrase = [word.lower() for word in tokenized_phrase]
+  tokenized_phrase = [ps.stem(word) for word in tokenized_phrase]
+
   tp_length = len(tokenized_phrase)
   edge_length = 3
   search_length = tp_length + edge_length
-  maximum_match_number = 0
+  maximum_match = 0
   for idx in range(0, len(tokenized_transcript)-search_length+1):
     search_list = tokenized_transcript[idx:idx + search_length]
-    match_list = list(set(tokenized_phrase).intersection(search_list))
-    match_number = len(match_list)
-    if match_number > maximum_match_number:
-      maximum_match_number = match_number
+    search_list = [ps.stem(word) for word in search_list]
 
-  matching_percentage = maximum_match_number / float(tp_length)
+    match_number = 0
+    txt_dict = {}
+    tran_dict = {}
+    for w in tokenized_phrase:
+      if w not in txt_dict:
+        txt_dict[w] = 1
+      else:
+        txt_dict[w] += 1
+
+    for w in search_list:
+      if w not in tran_dict:
+        tran_dict[w] = 1
+      else:
+        tran_dict[w] += 1
+
+    for word in txt_dict:
+      if word in tran_dict:
+        if txt_dict[word] > tran_dict[word]:
+          match_number += tran_dict[word]
+        else:
+          match_number += txt_dict[word]
+    if match_number > maximum_match:
+      maximum_match = match_number
+
+
+#  print("txt_dict", txt_dict)
+#  print("tran_dict", tran_dict)
+
+  matching_percentage = maximum_match / float(tp_length)
+#  print("Max match:", maximum_match)
+#  print("Match Number: ", match_number)
+#  print("tp_length: ", tp_length)
   return matching_percentage
-
 
 
 # Implementation of RAKE algorithm
